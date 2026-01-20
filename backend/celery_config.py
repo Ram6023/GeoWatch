@@ -1,30 +1,50 @@
-# backend/celery_config.py
+"""
+GeoWatch Celery Configuration
+Author: Ram
+Description: Celery task queue configuration for background satellite imagery processing.
+"""
 
 from celery import Celery
 from celery.schedules import crontab
 import os
 
-# Use Redis as the message broker
-# The broker URL points to your running Redis instance.
+# Redis broker configuration
 BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 
-# Create a Celery instance
+# Create GeoWatch Celery application
 celery_app = Celery(
-    "tasks",
+    "geowatch_tasks",
     broker=BROKER_URL,
     backend=RESULT_BACKEND,
-    include=["tasks_gee"]  # IMPORTANT: Tell Celery where to find tasks
+    include=["tasks_gee"]  # GeoWatch GEE task module
 )
 
-# --- Define the Scheduled Task ---
-# This is the "monitoring" part of your system.
+# GeoWatch scheduled tasks
 celery_app.conf.beat_schedule = {
-    'check-all-aois-daily': {
-        'task': 'tasks_gee.schedule_all_aoi_checks', # Points to the task function
-        'schedule': crontab("*"),  
-        # Use crontab(minute='*/30') for every 30 mins for testing
+    'geowatch-aoi-monitoring': {
+        'task': 'tasks_gee.schedule_all_aoi_checks',
+        'schedule': crontab(minute='0', hour='*/6'),  # Every 6 hours
+        'options': {'queue': 'geowatch'}
     },
 }
 
-celery_app.conf.timezone = 'UTC'
+# Celery configuration
+celery_app.conf.update(
+    timezone='UTC',
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    task_track_started=True,
+    task_time_limit=600,  # 10 minute timeout
+    task_soft_time_limit=540,
+    worker_prefetch_multiplier=1,
+    task_acks_late=True,
+)
+
+# GeoWatch task queues
+celery_app.conf.task_routes = {
+    'tasks_gee.*': {'queue': 'geowatch'},
+}
+
+print("🌍 GeoWatch Celery worker configured")

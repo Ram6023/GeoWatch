@@ -7,31 +7,43 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import AOIList from './pages/AOIList';
 import CreateAOI from './pages/CreateAOI';
+import AnalyticsPage from './pages/AnalyticsPage';
+import ReportsPage from './pages/ReportsPage';
 import Layout from './components/Layout';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-geowatch-accent border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">Loading GeoWatch...</p>
+        </div>
+      </div>
+    );
   }
-  
+
   return user ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-geowatch-accent border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">Loading GeoWatch...</p>
+        </div>
+      </div>
+    );
   }
-  
+
   return user ? <Navigate to="/dashboard" /> : <>{children}</>;
 }
 
@@ -39,9 +51,10 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
             <Routes>
+              {/* Public Routes */}
               <Route path="/login" element={
                 <PublicRoute>
                   <LoginPage />
@@ -52,6 +65,8 @@ function App() {
                   <SignupPage />
                 </PublicRoute>
               } />
+
+              {/* Protected Routes */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -67,20 +82,49 @@ function App() {
                   <CreateAOI />
                 </ProtectedRoute>
               } />
+              <Route path="/analytics" element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/reports" element={
+                <ProtectedRoute>
+                  <ReportsPage />
+                </ProtectedRoute>
+              } />
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <Settings />
                 </ProtectedRoute>
               } />
+
+              {/* Default redirect */}
               <Route path="/" element={<Navigate to="/dashboard" />} />
+              <Route path="*" element={<Navigate to="/dashboard" />} />
             </Routes>
-            <Toaster 
+
+            {/* Toast Notifications */}
+            <Toaster
               position="top-right"
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: '#363636',
-                  color: '#fff',
+                  background: '#1e293b',
+                  color: '#f1f5f9',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #334155',
+                },
+                success: {
+                  iconTheme: {
+                    primary: '#22c55e',
+                    secondary: '#f1f5f9',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#f1f5f9',
+                  },
                 },
               }}
             />

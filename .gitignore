@@ -1,39 +1,39 @@
+# Dependencies
+node_modules/
+backend/venv/
+backend/.venv/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Build outputs
+frontend/dist/
+frontend/build/
+backend/build/
+backend/dist/
+*.egg-info/
+
 # Logs
-logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-.bolt
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.env
-venv
-
-*.tif
-*.jpg
-*.png
-*.aux.xml
-*.meta
-*.ipynb_checkpoints/
-LISS4_T1/
-LISS4_T2/
-LISS-4-Satellite-imagery/output/
-Model/changes.geojson
-Model/aoi.geojson
+celerybeat-schedule

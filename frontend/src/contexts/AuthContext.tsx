@@ -18,7 +18,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'http://localhost:8000';
+// GeoWatch API Base URL
+const API_BASE_URL = 'http://localhost:8000/api/geowatch';
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Configure axios defaults
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('geowatch_token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
@@ -42,14 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user is logged in on app start
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('geowatch_token');
     if (token) {
       axios.get(`${API_BASE_URL}/auth/me`)
         .then(response => {
           setUser(response.data.user);
         })
         .catch(() => {
-          localStorage.removeItem('token');
+          localStorage.removeItem('geowatch_token');
           delete axios.defaults.headers.common['Authorization'];
         })
         .finally(() => setLoading(false));
@@ -61,16 +62,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post(
-    "http://localhost:8000/auth/login",
-    { email, password },
-    { withCredentials: true } // <-- THIS IS REQUIRED
-    );
-      
+        `${API_BASE_URL}/auth/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+
       const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      localStorage.setItem('geowatch_token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      toast.success('Welcome back!');
+      toast.success('Welcome to GeoWatch! 🌍');
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Login failed');
       throw error;
@@ -78,28 +79,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (email: string, password: string, name?: string) => {
-  try {
-    const response = await axios.post(
-      "http://localhost:8000/auth/signup",
-      { email, password, name },
-      { withCredentials: true }
-    );
-    const { token, user } = response.data;
-    localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(user);
-    toast.success('Account created successfully!');
-  } catch (error: any) {
-    toast.error(error.response?.data?.detail || 'Signup failed');
-    throw error;
-  }
-};
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/signup`,
+        { email, password, name },
+        { withCredentials: true }
+      );
+      const { token, user } = response.data;
+      localStorage.setItem('geowatch_token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(user);
+      toast.success('Welcome to GeoWatch! Start monitoring the Earth 🛰️');
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Signup failed');
+      throw error;
+    }
+  };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('geowatch_token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
-    toast.success('Logged out successfully');
+    toast.success('Signed out. See you soon!');
   };
 
   const value = {

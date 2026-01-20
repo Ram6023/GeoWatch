@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Globe -->
+  <circle cx="32" cy="32" r="24" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+  <ellipse cx="32" cy="32" rx="10" ry="24" stroke="#1e3a8a" stroke-width="2" fill="none"/>
+  <line x1="8" y1="32" x2="56" y2="32" stroke="#1e3a8a" stroke-width="2"/>
+  
+  <!-- Orbiting Arc with Satellite -->
+  <path d="M 10 20 A 30 30 0 0 1 54 32" stroke="#22c55e" stroke-width="3" stroke-linecap="round" fill="none"/>
+  
+  <!-- Satellite Dot -->
+  <circle cx="54" cy="32" r="4" fill="#22c55e"/>
+  
+  <!-- Scan lines (detection effect) -->
+  <path d="M 50 28 L 58 24" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 50 36 L 58 40" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+</svg>

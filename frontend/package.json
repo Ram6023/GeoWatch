@@ -1,7 +1,9 @@
 {
-  "name": "satellite-monitoring-frontend",
+  "name": "geowatch-frontend",
+  "description": "GeoWatch - Monitor Earth. Detect Change. Act Smart.",
+  "author": "Ram (Sriram Vissakoti)",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +22,8 @@
     "react-hot-toast": "^2.4.1",
     "react-leaflet": "^4.2.1",
     "react-leaflet-draw": "^0.20.6",
-    "react-router-dom": "^6.21.0"
+    "react-router-dom": "^6.21.0",
+    "recharts": "^2.12.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

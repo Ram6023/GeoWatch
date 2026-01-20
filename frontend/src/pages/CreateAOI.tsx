@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
-import { Save, X, Maximize2, Minimize2 } from 'lucide-react';
+import { Save, X, Maximize2, Minimize2, Globe2, Info, CheckCircle2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -71,7 +71,7 @@ export default function CreateAOI() {
     });
   };
 
-  const onDeleted = (e: any) => {
+  const onDeleted = () => {
     setDrawnShape(null);
   };
 
@@ -84,7 +84,7 @@ export default function CreateAOI() {
     }
 
     if (!formData.name.trim()) {
-      toast.error('Please enter an AOI name');
+      toast.error('Please enter a zone name');
       return;
     }
 
@@ -102,57 +102,68 @@ export default function CreateAOI() {
         status: 'active'
       };
 
-      await axios.post('http://localhost:8000/aois/', aoiData);
-      toast.success('AOI created successfully!');
+      await axios.post('http://localhost:8000/api/geowatch/aois/', aoiData);
+      toast.success('GeoWatch zone created successfully! 🛰️');
       navigate('/aois');
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to create AOI');
+      toast.error(error.response?.data?.detail || 'Failed to create zone');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 animate-fade-in">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
+        <div className="card overflow-hidden">
+          {/* Header */}
+          <div className="p-6 border-b border-slate-200 dark:border-slate-700 hero-gradient text-white">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Create New AOI</h1>
-                <p className="text-gray-600 mt-1">Define an area of interest for satellite monitoring</p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center">
+                  <Globe2 className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Define Area of Interest</h1>
+                  <p className="text-blue-200 mt-1">Draw the area you want GeoWatch to monitor</p>
+                </div>
               </div>
               <button
                 onClick={() => navigate('/aois')}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
           </div>
 
-          <div className={`grid grid-cols-1 ${mapFullScreen ? '' : 'lg:grid-cols-3'} gap-8 p-6 relative`}>
+          <div className={`grid grid-cols-1 ${mapFullScreen ? '' : 'lg:grid-cols-3'} gap-0 relative`}>
             {/* Map Section */}
-            <div className={`${mapFullScreen ? 'fixed inset-0 z-50 bg-white flex flex-col' : 'lg:col-span-2'} transition-all duration-300`}
-                 style={mapFullScreen ? {height: '100vh'} : {}}>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Draw Your Area of Interest</h2>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Use the drawing tools to define the area you want to monitor. You can draw polygons or rectangles.
-                  </p>
+            <div className={`${mapFullScreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-900 flex flex-col' : 'lg:col-span-2 border-r border-slate-200 dark:border-slate-700'} transition-all duration-300`}
+              style={mapFullScreen ? { height: '100vh' } : {}}>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Info className="h-5 w-5 text-geowatch-accent" />
+                    <div>
+                      <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Draw Your Monitoring Zone</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Use polygon or rectangle tools to define the area
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMapFullScreen(f => !f)}
+                    className="btn btn-secondary p-2"
+                    title={mapFullScreen ? 'Exit Full Screen' : 'Full Screen Map'}
+                  >
+                    {mapFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setMapFullScreen(f => !f)}
-                  className="ml-2 px-3 py-2 rounded-lg bg-gray-200 text-gray-900 font-semibold focus:outline-none hover:bg-gray-300"
-                  title={mapFullScreen ? 'Exit Full Screen' : 'Full Screen Map'}
-                >
-                  {mapFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-                </button>
               </div>
 
-              <div className={`${mapFullScreen ? 'flex-1' : ''} h-[400px] lg:h-[600px] rounded-lg overflow-hidden border border-gray-200`}>
+              <div className={`${mapFullScreen ? 'flex-1' : 'h-[500px] lg:h-[600px]'}`}>
                 <MapContainer
                   center={[20.5937, 78.9629]}
                   zoom={5}
@@ -185,17 +196,19 @@ export default function CreateAOI() {
                 </MapContainer>
               </div>
 
-              {drawnShape && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg mt-4">
-                  <p className="text-sm text-green-800">
-                    ✓ Area drawn successfully. You can edit or delete it using the map controls.
-                  </p>
+              {drawnShape && !mapFullScreen && (
+                <div className="p-3 bg-accent-50 dark:bg-accent-900/20 border-t border-accent-200 dark:border-accent-800">
+                  <div className="flex items-center gap-2 text-sm text-accent-700 dark:text-accent-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Area defined successfully. You can edit or delete it using the map controls.
+                  </div>
                 </div>
               )}
+
               {mapFullScreen && (
                 <button
                   onClick={() => setMapFullScreen(false)}
-                  className="absolute top-4 right-4 z-50 px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold shadow-lg hover:bg-gray-800"
+                  className="absolute top-4 right-4 z-50 btn btn-primary"
                 >
                   Exit Full Screen
                 </button>
@@ -204,11 +217,11 @@ export default function CreateAOI() {
 
             {/* Form Section */}
             {!mapFullScreen && (
-              <div className="space-y-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/30">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      AOI Name <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Zone Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -216,20 +229,20 @@ export default function CreateAOI() {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., My Farmland in Gujarat"
+                      className="input-geowatch"
+                      placeholder="e.g., Forest Zone Alpha"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Monitoring Frequency
                     </label>
                     <select
                       name="monitoringFrequency"
                       value={formData.monitoringFrequency}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-geowatch"
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -239,26 +252,26 @@ export default function CreateAOI() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Change Type (Primary Interest)
                     </label>
                     <select
                       name="changeType"
                       value={formData.changeType}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="input-geowatch"
                     >
-                      <option value="deforestation">Deforestation / Vegetation Loss</option>
-                      <option value="construction">Construction / Urbanization</option>
-                      <option value="waterbody">Waterbody Changes</option>
-                      <option value="agricultural">Agricultural Changes</option>
-                      <option value="other">Other</option>
+                      <option value="deforestation">🌳 Deforestation / Vegetation Loss</option>
+                      <option value="construction">🏗️ Construction / Urbanization</option>
+                      <option value="waterbody">💧 Waterbody Changes</option>
+                      <option value="agricultural">🌾 Agricultural Changes</option>
+                      <option value="other">📍 Other</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Confidence Threshold: {formData.confidenceThreshold}%
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Detection Threshold: <span className="text-geowatch-accent font-bold">{formData.confidenceThreshold}%</span>
                     </label>
                     <input
                       type="range"
@@ -268,45 +281,44 @@ export default function CreateAOI() {
                       step="10"
                       value={formData.confidenceThreshold}
                       onChange={handleInputChange}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-geowatch-accent"
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>Sensitive (30%)</span>
-                      <span>Moderate (60%)</span>
-                      <span>Strict (90%)</span>
+                    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      <span>More Sensitive</span>
+                      <span>More Strict</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Notification Preferences
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                      Alert Preferences
                     </label>
                     <div className="space-y-3">
-                      <label className="flex items-center">
+                      <label className="flex items-center p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-geowatch-accent transition-colors">
                         <input
                           type="checkbox"
                           name="emailAlerts"
                           checked={formData.emailAlerts}
                           onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-slate-300 text-geowatch-accent focus:ring-geowatch-accent"
                         />
-                        <span className="ml-3 text-sm text-gray-700">Email Alerts</span>
+                        <span className="ml-3 text-sm text-slate-700 dark:text-slate-300">Email Alerts</span>
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-geowatch-accent transition-colors">
                         <input
                           type="checkbox"
                           name="inAppNotifications"
                           checked={formData.inAppNotifications}
                           onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-slate-300 text-geowatch-accent focus:ring-geowatch-accent"
                         />
-                        <span className="ml-3 text-sm text-gray-700">In-App Notifications</span>
+                        <span className="ml-3 text-sm text-slate-700 dark:text-slate-300">In-App Notifications</span>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Description (Optional)
                     </label>
                     <textarea
@@ -314,33 +326,33 @@ export default function CreateAOI() {
                       value={formData.description}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Additional details about this AOI..."
+                      className="input-geowatch resize-none"
+                      placeholder="Additional details about this monitoring zone..."
                     />
                   </div>
 
-                  <div className="flex space-x-4 pt-4">
+                  <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
                       disabled={loading || !drawnShape}
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="btn btn-primary flex-1 flex items-center justify-center gap-2"
                     >
                       {loading ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        <>
+                          <div className="spinner"></div>
                           Creating...
-                        </div>
+                        </>
                       ) : (
-                        <div className="flex items-center justify-center">
-                          <Save className="mr-2 h-5 w-5" />
-                          Save AOI
-                        </div>
+                        <>
+                          <Save className="h-5 w-5" />
+                          Start GeoWatch Analysis
+                        </>
                       )}
                     </button>
                     <button
                       type="button"
                       onClick={() => navigate('/aois')}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                      className="btn btn-secondary"
                     >
                       Cancel
                     </button>

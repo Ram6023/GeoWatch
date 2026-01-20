@@ -1,66 +1,67 @@
-# Satellite Monitoring Backend
+# GeoWatch Backend API
 
-FastAPI backend for the satellite monitoring application.
+> FastAPI-based backend for the GeoWatch satellite imagery change detection platform.
 
-## Setup
+## Author
+**Ram (Sriram Vissakoti)** — B.Tech Engineering Student
 
-1. Install dependencies:
+## Quick Start
+
 ```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Authenticate with Google Earth Engine
+python -c "import ee; ee.Authenticate()"
+
+# Run the server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-2. Install and start MongoDB:
-```bash
-# On Ubuntu/Debian
-sudo apt-get install mongodb
+## API Endpoints
 
-# On macOS with Homebrew
-brew install mongodb-community
-brew services start mongodb-community
+Base URL: `http://localhost:8000/api/geowatch`
 
-# On Windows, download and install from MongoDB website
+### Authentication
+- `POST /auth/signup` - Create account
+- `POST /auth/login` - Sign in
+- `GET /auth/me` - Get current user
+- `POST /auth/logout` - Sign out
+
+### Areas of Interest
+- `POST /aois/` - Create monitoring zone
+- `GET /aois/` - List all zones
+- `GET /aois/{id}` - Get zone details
+- `PUT /aois/{id}` - Update zone
+- `DELETE /aois/{id}` - Delete zone
+- `GET /aois/{id}/changes` - Get change alerts
+
+### Analysis
+- `GET /analysis/{id}/ndvi` - Get NDVI time-series
+- `GET /analysis/{id}/report` - Generate report
+- `GET /analysis/{id}/summary` - Get summary
+
+## Environment Variables
+
+Create a `.env` file:
+
+```env
+MONGODB_URL=mongodb://localhost:27017/geowatch
+JWT_SECRET=geowatch_ram_secret_key_2026_secure
+GEE_PROJECT=your-gee-project-id
 ```
 
-3. Run the FastAPI server:
-```bash
-python main.py
-```
+## Documentation
 
-The API will be available at `http://localhost:8000`
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-## API Documentation
+---
 
-Visit `http://localhost:8000/docs` for interactive API documentation.
-
-## Database Collections
-
-### Users
-- `_id`: ObjectId
-- `email`: String (unique)
-- `password`: String (hashed)
-- `name`: String (optional)
-- `createdAt`: DateTime
-- `updatedAt`: DateTime
-
-### AOIs (Areas of Interest)
-- `_id`: ObjectId
-- `userId`: ObjectId (reference to user)
-- `name`: String
-- `geojson`: Object (GeoJSON geometry)
-- `changeType`: String
-- `monitoringFrequency`: String
-- `confidenceThreshold`: Number
-- `emailAlerts`: Boolean
-- `inAppNotifications`: Boolean
-- `description`: String (optional)
-- `status`: String
-- `createdAt`: DateTime
-- `updatedAt`: DateTime
-- `lastMonitored`: DateTime (optional)
-
-## Authentication
-
-The API uses JWT tokens for authentication. Include the token in the Authorization header:
-```
-Authorization: Bearer <your_jwt_token>
-```
+**© 2026 GeoWatch — Built by Ram**
