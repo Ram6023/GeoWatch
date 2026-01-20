@@ -174,8 +174,11 @@ geowatch/
 │   ├── 📄 tailwind.config.js   # Brand colors & theme
 │   └── 📄 package.json
 │
-├── 📂 Model/                   # ML models (if applicable)
-├── 📂 Images/                  # Documentation images
+├── 📂 notebooks/               # Analysis notebooks
+│   └── 📂 data/                # Sample datasets
+│
+├── 📂 documentation/           # Project docs
+│   └── 📂 images/              # Documentation assets
 └── 📄 README.md
 ```
 
