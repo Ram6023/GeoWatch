@@ -13,8 +13,8 @@
 
 **Built with ❤️ by Ram (Sriram Vissakoti)**
 
+
 <p align="center">
-  <img src="https://media.giphy.com/media/dummy-earth-spin/giphy.gif" alt="Earth Spin" width="100" height="auto" style="display:none;"/> <!-- Placeholder for effect -->
   <i>AI-Powered Satellite Imagery Change Detection Platform</i>
 </p>
 
