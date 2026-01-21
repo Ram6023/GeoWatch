@@ -6,8 +6,8 @@ import { Save, X, Maximize2, Minimize2, Globe2, Info, CheckCircle2 } from 'lucid
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { AOIService } from '../services/mockData';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -19,8 +19,8 @@ L.Icon.Default.mergeOptions({
 
 interface AOIFormData {
   name: string;
-  monitoringFrequency: string;
-  changeType: string;
+  monitoringFrequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  changeType: 'deforestation' | 'construction' | 'waterbody' | 'agricultural' | 'other';
   confidenceThreshold: number;
   emailAlerts: boolean;
   inAppNotifications: boolean;
@@ -90,7 +90,7 @@ export default function CreateAOI() {
 
     setLoading(true);
     try {
-      const aoiData = {
+      await AOIService.create({
         name: formData.name,
         geojson: drawnShape,
         changeType: formData.changeType,
@@ -100,13 +100,11 @@ export default function CreateAOI() {
         inAppNotifications: formData.inAppNotifications,
         description: formData.description,
         status: 'active'
-      };
-
-      await axios.post('http://localhost:8000/api/geowatch/aois/', aoiData);
+      });
       toast.success('GeoWatch zone created successfully! 🛰️');
       navigate('/aois');
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to create zone');
+      toast.error(error.message || 'Failed to create zone');
     } finally {
       setLoading(false);
     }
@@ -171,8 +169,8 @@ export default function CreateAOI() {
                   ref={mapRef}
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                    attribution='&copy; <a href="https://www.esri.com">Esri</a> | Satellite Imagery'
                   />
                   <FeatureGroup>
                     <EditControl

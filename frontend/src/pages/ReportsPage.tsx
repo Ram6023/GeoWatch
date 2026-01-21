@@ -1,57 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
     FileText,
     Download,
-    MapPin,
     Calendar,
     CheckCircle2,
     Clock,
-    Globe2,
-    BarChart3,
-    Image
+    Globe2
 } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
-
-interface AOI {
-    _id: string;
-    name: string;
-    changeType: string;
-    status: string;
-    createdAt: string;
-}
+import { AOIService, AnalysisService, AOI } from '../services/mockData';
 
 interface ReportData {
-    message: string;
-    format: string;
-    report: {
-        report_title: string;
-        generated_at: string;
-        author: string;
-        aoi: {
-            name: string;
-            change_type: string;
-            monitoring_frequency: string;
-            confidence_threshold: number;
-            status: string;
-        };
-        ndvi_analysis: {
-            trend: string;
-            trend_description: string;
-            statistics: {
-                min: number;
-                max: number;
-                avg: number;
-                current: number;
-            };
-        };
-        changes_detected: number;
-        footer: string;
+    report_title: string;
+    generated_at: string;
+    generated_by: string;
+    aoi: {
+        id: string;
+        name: string;
+        description?: string;
+        change_type: string;
+        monitoring_frequency: string;
+        confidence_threshold?: number;
+        status: string;
+        created_at: string;
     };
+    ndvi_analysis: {
+        trend: string;
+        trendDescription: string;
+        min: string;
+        max: string;
+        avg: string;
+        current: string;
+    };
+    total_alerts: number;
+    recent_alerts: any[];
+    footer: string;
 }
 
 export default function ReportsPage() {
+    const [searchParams] = useSearchParams();
     const [aois, setAois] = useState<AOI[]>([]);
     const [selectedAoi, setSelectedAoi] = useState<string | null>(null);
     const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -64,10 +52,15 @@ export default function ReportsPage() {
 
     const fetchAOIs = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/geowatch/aois/');
-            setAois(response.data);
-            if (response.data.length > 0) {
-                setSelectedAoi(response.data[0]._id);
+            const data = await AOIService.getAll();
+            setAois(data);
+
+            // Check if there's an AOI ID in URL params
+            const aoiFromUrl = searchParams.get('aoi');
+            if (aoiFromUrl && data.find(a => a._id === aoiFromUrl)) {
+                setSelectedAoi(aoiFromUrl);
+            } else if (data.length > 0) {
+                setSelectedAoi(data[0]._id);
             }
         } catch (error) {
             console.error('Error fetching zones:', error);
@@ -85,8 +78,8 @@ export default function ReportsPage() {
 
         setGenerating(true);
         try {
-            const response = await axios.get(`http://localhost:8000/api/geowatch/analysis/${selectedAoi}/report`);
-            setReportData(response.data);
+            const response = await AnalysisService.generateReport(selectedAoi);
+            setReportData(response);
             toast.success('Report generated successfully!');
         } catch (error) {
             console.error('Error generating report:', error);
@@ -99,15 +92,114 @@ export default function ReportsPage() {
     const downloadReportJSON = () => {
         if (!reportData) return;
 
-        const dataStr = JSON.stringify(reportData.report, null, 2);
+        const dataStr = JSON.stringify(reportData, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(dataBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `geowatch-report-${reportData.report.aoi.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+        link.download = `geowatch-report-${reportData.aoi.name.replace(/\s+/g, '-').toLowerCase()}.json`;
         link.click();
         URL.revokeObjectURL(url);
         toast.success('Report downloaded!');
+    };
+
+    const downloadReportPDF = () => {
+        if (!reportData) return;
+
+        // Create a simple HTML report and trigger print dialog
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            toast.error('Please allow popups to download PDF');
+            return;
+        }
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>GeoWatch Report - ${reportData.aoi.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+                    h1 { color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 10px; }
+                    h2 { color: #333; margin-top: 30px; }
+                    .header { background: linear-gradient(135deg, #0066cc, #00aa66); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
+                    .header h1 { color: white; border: none; margin: 0; }
+                    .header p { margin: 10px 0 0 0; opacity: 0.9; }
+                    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; }
+                    .stat-card { background: #f5f5f5; padding: 20px; border-radius: 10px; }
+                    .stat-label { color: #666; font-size: 14px; }
+                    .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+                    .trend-increasing { color: #22c55e; }
+                    .trend-decreasing { color: #ef4444; }
+                    .trend-stable { color: #f59e0b; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background: #f5f5f5; }
+                    .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; }
+                    @media print { body { padding: 20px; } .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>🌍 ${reportData.report_title}</h1>
+                    <p>${reportData.aoi.name}</p>
+                    <p style="font-size: 12px; margin-top: 15px;">Generated: ${new Date(reportData.generated_at).toLocaleString()}</p>
+                </div>
+                
+                <h2>Zone Configuration</h2>
+                <table>
+                    <tr><th>Property</th><th>Value</th></tr>
+                    <tr><td>Name</td><td>${reportData.aoi.name}</td></tr>
+                    <tr><td>Change Type</td><td style="text-transform: capitalize;">${reportData.aoi.change_type}</td></tr>
+                    <tr><td>Monitoring Frequency</td><td style="text-transform: capitalize;">${reportData.aoi.monitoring_frequency}</td></tr>
+                    <tr><td>Status</td><td style="text-transform: capitalize;">${reportData.aoi.status}</td></tr>
+                    ${reportData.aoi.description ? `<tr><td>Description</td><td>${reportData.aoi.description}</td></tr>` : ''}
+                </table>
+                
+                <h2>NDVI Analysis</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Current NDVI</div>
+                        <div class="stat-value" style="color: #22c55e;">${reportData.ndvi_analysis.current}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Average NDVI</div>
+                        <div class="stat-value">${reportData.ndvi_analysis.avg}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Max NDVI</div>
+                        <div class="stat-value">${reportData.ndvi_analysis.max}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Min NDVI</div>
+                        <div class="stat-value">${reportData.ndvi_analysis.min}</div>
+                    </div>
+                </div>
+                
+                <h2>Trend Analysis</h2>
+                <p><strong>Trend:</strong> <span class="trend-${reportData.ndvi_analysis.trend}" style="text-transform: capitalize;">${reportData.ndvi_analysis.trend}</span></p>
+                <p>${reportData.ndvi_analysis.trendDescription}</p>
+                
+                <h2>Change Detection</h2>
+                <p>Total alerts detected: <strong>${reportData.total_alerts}</strong></p>
+                
+                <div class="footer">
+                    <p>${reportData.footer}</p>
+                    <p style="font-size: 12px;">© 2026 GeoWatch. All rights reserved.</p>
+                </div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+        // Wait for content to load then trigger print
+        printWindow.onload = () => {
+            printWindow.print();
+        };
+
+        toast.success('PDF print dialog opened!');
     };
 
     if (loading) {
@@ -184,7 +276,7 @@ export default function ReportsPage() {
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 text-geowatch-accent" />
-                                        Before/After imagery
+                                        Trend analysis results
                                     </li>
                                 </ul>
                             </div>
@@ -214,13 +306,22 @@ export default function ReportsPage() {
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Report Preview</h2>
                             {reportData && (
-                                <button
-                                    onClick={downloadReportJSON}
-                                    className="btn btn-accent flex items-center gap-2"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Download Report
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={downloadReportJSON}
+                                        className="btn btn-secondary flex items-center gap-2"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        JSON
+                                    </button>
+                                    <button
+                                        onClick={downloadReportPDF}
+                                        className="btn btn-accent flex items-center gap-2"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        PDF
+                                    </button>
+                                </div>
                             )}
                         </div>
 
@@ -233,18 +334,18 @@ export default function ReportsPage() {
                                             <Globe2 className="h-8 w-8 text-white" />
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-bold">{reportData.report.report_title}</h3>
-                                            <p className="text-blue-200">{reportData.report.aoi.name}</p>
+                                            <h3 className="text-2xl font-bold">{reportData.report_title}</h3>
+                                            <p className="text-blue-200">{reportData.aoi.name}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm text-blue-200">
                                         <span className="flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
-                                            {new Date(reportData.report.generated_at).toLocaleDateString()}
+                                            {new Date(reportData.generated_at).toLocaleDateString()}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <Clock className="h-4 w-4" />
-                                            {new Date(reportData.report.generated_at).toLocaleTimeString()}
+                                            {new Date(reportData.generated_at).toLocaleTimeString()}
                                         </span>
                                     </div>
                                 </div>
@@ -256,19 +357,15 @@ export default function ReportsPage() {
                                         <dl className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Change Type</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.report.aoi.change_type}</dd>
+                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.aoi.change_type}</dd>
                                             </div>
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Frequency</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.report.aoi.monitoring_frequency}</dd>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <dt className="text-slate-600 dark:text-slate-400">Threshold</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white">{reportData.report.aoi.confidence_threshold}%</dd>
+                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.aoi.monitoring_frequency}</dd>
                                             </div>
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Status</dt>
-                                                <dd className="badge badge-success">{reportData.report.aoi.status}</dd>
+                                                <dd className="badge badge-success">{reportData.aoi.status}</dd>
                                             </div>
                                         </dl>
                                     </div>
@@ -278,19 +375,19 @@ export default function ReportsPage() {
                                         <dl className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Current</dt>
-                                                <dd className="font-medium text-geowatch-accent">{reportData.report.ndvi_analysis.statistics.current?.toFixed(4) || 'N/A'}</dd>
+                                                <dd className="font-medium text-geowatch-accent">{reportData.ndvi_analysis.current}</dd>
                                             </div>
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Average</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white">{reportData.report.ndvi_analysis.statistics.avg?.toFixed(4) || 'N/A'}</dd>
+                                                <dd className="font-medium text-slate-900 dark:text-white">{reportData.ndvi_analysis.avg}</dd>
                                             </div>
                                             <div className="flex justify-between">
                                                 <dt className="text-slate-600 dark:text-slate-400">Trend</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.report.ndvi_analysis.trend}</dd>
+                                                <dd className="font-medium text-slate-900 dark:text-white capitalize">{reportData.ndvi_analysis.trend}</dd>
                                             </div>
                                             <div className="flex justify-between">
-                                                <dt className="text-slate-600 dark:text-slate-400">Changes Detected</dt>
-                                                <dd className="font-medium text-slate-900 dark:text-white">{reportData.report.changes_detected}</dd>
+                                                <dt className="text-slate-600 dark:text-slate-400">Alerts</dt>
+                                                <dd className="font-medium text-slate-900 dark:text-white">{reportData.total_alerts}</dd>
                                             </div>
                                         </dl>
                                     </div>
@@ -298,7 +395,7 @@ export default function ReportsPage() {
 
                                 {/* Footer */}
                                 <div className="text-center py-4 border-t border-slate-200 dark:border-slate-700">
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">{reportData.report.footer}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">{reportData.footer}</p>
                                 </div>
                             </div>
                         ) : (

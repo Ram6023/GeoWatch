@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
     BarChart3,
     TrendingUp,
@@ -8,11 +8,11 @@ import {
     MapPin,
     RefreshCw,
     Info,
-    Leaf
+    Leaf,
+    Satellite,
+    Activity
 } from 'lucide-react';
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -22,38 +22,32 @@ import {
     AreaChart,
     Legend
 } from 'recharts';
-import axios from 'axios';
 import toast from 'react-hot-toast';
-
-interface AOI {
-    _id: string;
-    name: string;
-    changeType: string;
-    status: string;
-}
+import { AOIService, AnalysisService, AOI } from '../services/mockData';
 
 interface NDVIData {
-    aoi_id: string;
-    aoi_name: string;
     data: Array<{
         date: string;
         ndvi: number;
         quality: string;
     }>;
     trend: string;
-    trend_description: string;
     statistics: {
-        min: number | null;
-        max: number | null;
-        avg: number | null;
-        current: number | null;
+        min: string;
+        max: string;
+        avg: string;
+        current: string;
+        trend: string;
+        trendDescription: string;
     };
 }
 
 export default function AnalyticsPage() {
+    const [searchParams] = useSearchParams();
     const [aois, setAois] = useState<AOI[]>([]);
     const [selectedAoi, setSelectedAoi] = useState<string | null>(null);
     const [ndviData, setNdviData] = useState<NDVIData | null>(null);
+    const [selectedAoiName, setSelectedAoiName] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [chartLoading, setChartLoading] = useState(false);
 
@@ -64,15 +58,23 @@ export default function AnalyticsPage() {
     useEffect(() => {
         if (selectedAoi) {
             fetchNDVIData(selectedAoi);
+            const aoi = aois.find(a => a._id === selectedAoi);
+            if (aoi) {
+                setSelectedAoiName(aoi.name);
+            }
         }
-    }, [selectedAoi]);
+    }, [selectedAoi, aois]);
 
     const fetchAOIs = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/geowatch/aois/');
-            setAois(response.data);
-            if (response.data.length > 0) {
-                setSelectedAoi(response.data[0]._id);
+            const data = await AOIService.getAll();
+            setAois(data);
+
+            const aoiFromUrl = searchParams.get('aoi');
+            if (aoiFromUrl && data.find(a => a._id === aoiFromUrl)) {
+                setSelectedAoi(aoiFromUrl);
+            } else if (data.length > 0) {
+                setSelectedAoi(data[0]._id);
             }
         } catch (error) {
             console.error('Error fetching zones:', error);
@@ -85,8 +87,8 @@ export default function AnalyticsPage() {
     const fetchNDVIData = async (aoiId: string) => {
         setChartLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8000/api/geowatch/analysis/${aoiId}/ndvi`);
-            setNdviData(response.data);
+            const response = await AnalysisService.getNDVITimeSeries(aoiId);
+            setNdviData(response);
         } catch (error) {
             console.error('Error fetching NDVI data:', error);
             toast.error('Failed to fetch NDVI data');
@@ -98,43 +100,48 @@ export default function AnalyticsPage() {
     const getTrendIcon = (trend: string) => {
         switch (trend) {
             case 'increasing':
-                return <TrendingUp className="h-5 w-5 text-geowatch-accent" />;
+                return <TrendingUp className="h-5 w-5 text-emerald-400" />;
             case 'decreasing':
-                return <TrendingDown className="h-5 w-5 text-red-500" />;
+                return <TrendingDown className="h-5 w-5 text-red-400" />;
             default:
-                return <Minus className="h-5 w-5 text-amber-500" />;
+                return <Minus className="h-5 w-5 text-amber-400" />;
         }
     };
 
     const getTrendColor = (trend: string) => {
         switch (trend) {
             case 'increasing':
-                return 'text-geowatch-accent';
+                return 'text-emerald-400';
             case 'decreasing':
-                return 'text-red-500';
+                return 'text-red-400';
             default:
-                return 'text-amber-500';
+                return 'text-amber-400';
         }
     };
 
-    const getNDVIColor = (value: number | null) => {
-        if (value === null) return 'text-slate-500';
-        if (value >= 0.6) return 'text-geowatch-accent';
-        if (value >= 0.3) return 'text-amber-500';
-        return 'text-red-500';
+    const getNDVIColor = (value: string | null) => {
+        if (value === null) return 'text-slate-400';
+        const num = parseFloat(value);
+        if (num >= 0.6) return 'text-emerald-400';
+        if (num >= 0.3) return 'text-amber-400';
+        return 'text-red-400';
     };
 
-    const formatNDVI = (value: number | null) => {
+    const formatNDVI = (value: string | null) => {
         if (value === null) return 'N/A';
-        return value.toFixed(4);
+        return value;
     };
 
     if (loading) {
         return (
-            <div className="p-6">
-                <div className="animate-pulse">
-                    <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded-xl w-1/4 mb-6"></div>
-                    <div className="card h-96"></div>
+            <div className="p-6 flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                        <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20" />
+                        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-500 animate-spin" />
+                        <Activity className="absolute inset-0 m-auto h-8 w-8 text-cyan-400" />
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 animate-pulse">Loading analytics data...</p>
                 </div>
             </div>
         );
@@ -144,12 +151,22 @@ export default function AnalyticsPage() {
         <div className="p-6 space-y-6 animate-fade-in">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                        <BarChart3 className="h-8 w-8 text-geowatch-accent" />
-                        GeoWatch Analytics
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">NDVI time-series analysis and vegetation health monitoring</p>
+                <div className="flex items-center gap-4">
+                    <div
+                        className="w-14 h-14 rounded-xl flex items-center justify-center"
+                        style={{
+                            background: 'linear-gradient(135deg, #06b6d4 0%, #22c55e 100%)',
+                            boxShadow: '0 0 25px rgba(6, 182, 212, 0.4)'
+                        }}
+                    >
+                        <BarChart3 className="h-7 w-7 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white font-display">
+                            NDVI Analytics
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400">Vegetation health monitoring & trend analysis</p>
+                    </div>
                 </div>
                 {selectedAoi && (
                     <button
@@ -166,8 +183,12 @@ export default function AnalyticsPage() {
             {/* Zone Selector */}
             <div className="card">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-geowatch-deep" />
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style={{ background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(34, 197, 94, 0.2) 100%)' }}
+                        >
+                            <MapPin className="h-5 w-5 text-cyan-500" />
+                        </div>
                         <span className="font-medium text-slate-700 dark:text-slate-300">Select Zone:</span>
                     </div>
                     <select
@@ -186,8 +207,11 @@ export default function AnalyticsPage() {
 
             {aois.length === 0 ? (
                 <div className="card text-center py-12">
-                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Leaf className="h-10 w-10 text-slate-400" />
+                    <div className="relative w-24 h-24 mx-auto mb-6">
+                        <div className="absolute inset-0 rounded-full border-2 border-dashed border-slate-300 dark:border-slate-600 animate-spin-slow" style={{ animationDuration: '20s' }} />
+                        <div className="absolute inset-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <Leaf className="h-8 w-8 text-slate-400" />
+                        </div>
                     </div>
                     <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">No monitoring zones</h3>
                     <p className="text-slate-500 dark:text-slate-400 mb-6">Create a zone to start viewing NDVI analytics</p>
@@ -200,82 +224,66 @@ export default function AnalyticsPage() {
                     {/* Stats Cards */}
                     {ndviData && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="card">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-accent-100 dark:bg-accent-900/30 rounded-xl flex items-center justify-center">
-                                        <Leaf className="h-6 w-6 text-geowatch-accent" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">Current NDVI</p>
-                                        <p className={`text-2xl font-bold ${getNDVIColor(ndviData.statistics.current)}`}>
-                                            {formatNDVI(ndviData.statistics.current)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="card">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
-                                        {getTrendIcon(ndviData.trend)}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">Trend</p>
-                                        <p className={`text-xl font-bold capitalize ${getTrendColor(ndviData.trend)}`}>
-                                            {ndviData.trend.replace('_', ' ')}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="card">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                                        <TrendingUp className="h-6 w-6 text-amber-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">Max NDVI</p>
-                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                                            {formatNDVI(ndviData.statistics.max)}
-                                        </p>
+                            {[
+                                { label: 'Current NDVI', value: ndviData.statistics.current, icon: Leaf, gradient: 'from-emerald-500 to-teal-600', colorFn: getNDVIColor },
+                                { label: 'Trend', value: ndviData.trend, icon: () => getTrendIcon(ndviData.trend), gradient: 'from-cyan-500 to-blue-600', colorFn: getTrendColor },
+                                { label: 'Max NDVI', value: ndviData.statistics.max, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', colorFn: () => 'text-slate-900 dark:text-white' },
+                                { label: 'Average NDVI', value: ndviData.statistics.avg, icon: BarChart3, gradient: 'from-violet-500 to-purple-600', colorFn: () => 'text-slate-900 dark:text-white' },
+                            ].map((stat, index) => (
+                                <div key={stat.label} className="card animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-12 h-12 rounded-xl flex items-center justify-center"
+                                            style={{
+                                                background: `linear-gradient(135deg, ${stat.gradient.replace('from-', '').replace(' to-', ', ')})`,
+                                                boxShadow: '0 4px 15px rgba(0,0,0,0.15)'
+                                            }}
+                                        >
+                                            {typeof stat.icon === 'function' ? stat.icon({}) : <stat.icon className="h-6 w-6 text-white" />}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
+                                            <p className={`text-2xl font-bold capitalize ${stat.colorFn(stat.value)}`}>
+                                                {stat.label === 'Trend' ? stat.value.replace('_', ' ') : formatNDVI(stat.value)}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="card">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                                        <BarChart3 className="h-6 w-6 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">Average NDVI</p>
-                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                                            {formatNDVI(ndviData.statistics.avg)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     )}
 
                     {/* NDVI Chart */}
                     <div className="card">
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">NDVI Time-Series</h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                    Vegetation health index over time for {ndviData?.aoi_name || 'selected zone'}
-                                </p>
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                    style={{ background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)' }}
+                                >
+                                    <Activity className="h-5 w-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">NDVI Time-Series</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        12-month vegetation health for {selectedAoiName || 'selected zone'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
                                 <Info className="h-4 w-4" />
-                                <span>NDVI ranges from -1 to 1. Higher values indicate healthier vegetation.</span>
+                                <span>NDVI -1 to 1 • Higher = Healthier</span>
                             </div>
                         </div>
 
                         {chartLoading ? (
                             <div className="h-[400px] flex items-center justify-center">
-                                <div className="spinner border-geowatch-accent"></div>
+                                <div className="text-center">
+                                    <div className="relative w-16 h-16 mx-auto mb-4">
+                                        <div className="absolute inset-0 rounded-full border-4 border-emerald-500/20" />
+                                        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-emerald-500 animate-spin" />
+                                    </div>
+                                    <p className="text-slate-500 dark:text-slate-400">Processing satellite data...</p>
+                                </div>
                             </div>
                         ) : ndviData ? (
                             <div className="h-[400px]">
@@ -283,28 +291,32 @@ export default function AnalyticsPage() {
                                     <AreaChart data={ndviData.data}>
                                         <defs>
                                             <linearGradient id="ndviGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                                                <stop offset="5%" stopColor="#00ff88" stopOpacity={0.4} />
+                                                <stop offset="50%" stopColor="#22c55e" stopOpacity={0.2} />
                                                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.2)" />
                                         <XAxis
                                             dataKey="date"
                                             tick={{ fontSize: 12, fill: '#64748b' }}
-                                            tickLine={{ stroke: '#e2e8f0' }}
+                                            tickLine={{ stroke: 'rgba(148, 163, 184, 0.3)' }}
+                                            axisLine={{ stroke: 'rgba(148, 163, 184, 0.3)' }}
                                         />
                                         <YAxis
                                             domain={[-0.2, 1]}
                                             tick={{ fontSize: 12, fill: '#64748b' }}
-                                            tickLine={{ stroke: '#e2e8f0' }}
+                                            tickLine={{ stroke: 'rgba(148, 163, 184, 0.3)' }}
+                                            axisLine={{ stroke: 'rgba(148, 163, 184, 0.3)' }}
                                             label={{ value: 'NDVI', angle: -90, position: 'insideLeft', fill: '#64748b' }}
                                         />
                                         <Tooltip
                                             contentStyle={{
-                                                backgroundColor: '#1e293b',
-                                                border: 'none',
+                                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                                border: '1px solid rgba(6, 182, 212, 0.3)',
                                                 borderRadius: '0.75rem',
-                                                color: '#f1f5f9'
+                                                color: '#f1f5f9',
+                                                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
                                             }}
                                             formatter={(value: number) => [value.toFixed(4), 'NDVI']}
                                         />
@@ -312,12 +324,12 @@ export default function AnalyticsPage() {
                                         <Area
                                             type="monotone"
                                             dataKey="ndvi"
-                                            stroke="#22c55e"
+                                            stroke="#00ff88"
                                             strokeWidth={3}
                                             fill="url(#ndviGradient)"
                                             name="NDVI Value"
-                                            dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
-                                            activeDot={{ r: 6, fill: '#16a34a' }}
+                                            dot={{ fill: '#00ff88', strokeWidth: 2, r: 4, stroke: '#0f172a' }}
+                                            activeDot={{ r: 6, fill: '#00ff88', stroke: '#0f172a', strokeWidth: 2 }}
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -331,12 +343,26 @@ export default function AnalyticsPage() {
 
                     {/* Trend Analysis */}
                     {ndviData && (
-                        <div className="card hero-gradient text-white">
-                            <div className="flex items-center gap-4">
-                                {getTrendIcon(ndviData.trend)}
+                        <div className="rounded-2xl p-6 text-white relative overflow-hidden"
+                            style={{
+                                background: 'linear-gradient(135deg, #0c1445 0%, #1e3a8a 40%, #064e3b 100%)'
+                            }}
+                        >
+                            {/* Background decoration */}
+                            <div className="absolute inset-0 overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl" />
+                            </div>
+
+                            <div className="relative z-10 flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style={{ background: 'rgba(255,255,255,0.1)' }}
+                                >
+                                    {getTrendIcon(ndviData.trend)}
+                                </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold">Trend Analysis</h3>
-                                    <p className="text-blue-200">{ndviData.trend_description}</p>
+                                    <h3 className="text-xl font-bold mb-2 font-display">Trend Analysis</h3>
+                                    <p className="text-cyan-200 leading-relaxed">{ndviData.statistics.trendDescription}</p>
                                 </div>
                             </div>
                         </div>

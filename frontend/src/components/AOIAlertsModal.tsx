@@ -1,52 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { X, Calendar, Maximize2, AlertTriangle, CheckCircle2 } from 'lucide-react';
-
-interface Alert {
-    _id: string;
-    detection_date: string;
-    area_of_change: number;
-    change_percent?: number;
-    severity?: string;
-    before_image_url: string;
-    after_image_url: string;
-    status: string;
-}
+import { AnalysisService, ChangeAlert } from '../services/mockData';
 
 export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onClose: () => void }) {
-    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [alerts, setAlerts] = useState<ChangeAlert[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchAlertsAndThumbnails() {
+        async function fetchAlerts() {
             setLoading(true);
             try {
-                // Fetch alerts from GeoWatch API
-                const res = await axios.get(`http://localhost:8000/api/geowatch/aois/${aoiId}/changes?nocache=${Date.now()}`);
-                const alertsData = res.data;
-
-                // Fetch thumbnails for each alert
-                const alertThumbnails = await Promise.all(alertsData.map(async (alert: any) => {
-                    try {
-                        const beforeRes = await axios.get(`http://localhost:8000/api/geowatch/aois/${alert._id}/thumbnail?type=before`);
-                        const afterRes = await axios.get(`http://localhost:8000/api/geowatch/aois/${alert._id}/thumbnail?type=after`);
-                        return {
-                            ...alert,
-                            before_image_url: beforeRes.data.url,
-                            after_image_url: afterRes.data.url,
-                        };
-                    } catch {
-                        return alert;
-                    }
-                }));
-                setAlerts(alertThumbnails);
+                const alertsData = await AnalysisService.getChangeAlerts(aoiId);
+                setAlerts(alertsData);
             } catch (err) {
                 setAlerts([]);
             } finally {
                 setLoading(false);
             }
         }
-        fetchAlertsAndThumbnails();
+        fetchAlerts();
     }, [aoiId]);
 
     const getSeverityBadge = (severity?: string) => {
@@ -127,22 +99,25 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
                                         </span>
                                     </div>
 
+                                    {/* Description */}
+                                    <p className="text-slate-600 dark:text-slate-300 mb-4">
+                                        {alert.description}
+                                    </p>
+
                                     {/* Stats */}
                                     <div className="grid grid-cols-2 gap-4 mb-4">
                                         <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">Area Changed</p>
-                                            <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                                {alert.area_of_change?.toFixed(2) || 'N/A'} m²
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Change Type</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white capitalize">
+                                                {alert.change_type}
                                             </p>
                                         </div>
-                                        {alert.change_percent && (
-                                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">Change Percentage</p>
-                                                <p className="text-lg font-bold text-geowatch-accent">
-                                                    {alert.change_percent.toFixed(1)}%
-                                                </p>
-                                            </div>
-                                        )}
+                                        <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Change Percentage</p>
+                                            <p className="text-lg font-bold text-geowatch-accent">
+                                                {alert.change_percent.toFixed(1)}%
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {/* Before/After Images */}
@@ -154,12 +129,11 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
                                             </div>
                                             <div className="aspect-video bg-slate-200 dark:bg-slate-600 rounded-xl overflow-hidden">
                                                 <img
-                                                    src={`http://localhost:8000/api/geowatch/aois/change/${alert._id}/thumbnail-proxy?type=before`}
+                                                    src={alert.before_image_url}
                                                     alt="Before"
                                                     className="w-full h-full object-cover"
-                                                    crossOrigin="use-credentials"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).style.display = 'none';
+                                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&h=300&fit=crop';
                                                     }}
                                                 />
                                             </div>
@@ -171,12 +145,11 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
                                             </div>
                                             <div className="aspect-video bg-slate-200 dark:bg-slate-600 rounded-xl overflow-hidden">
                                                 <img
-                                                    src={`http://localhost:8000/api/geowatch/aois/change/${alert._id}/thumbnail-proxy?type=after`}
+                                                    src={alert.after_image_url}
                                                     alt="After"
                                                     className="w-full h-full object-cover"
-                                                    crossOrigin="use-credentials"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).style.display = 'none';
+                                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&h=300&fit=crop';
                                                     }}
                                                 />
                                             </div>

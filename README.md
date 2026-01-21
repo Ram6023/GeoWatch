@@ -1,129 +1,259 @@
+# 🌍 GeoWatch - Satellite Earth Monitoring Platform
 
 <div align="center">
 
-# 🌍 𝐆𝐞𝐨𝐖𝐚𝐭𝐜𝐡
-### 🛰️ 𝐌𝐨𝐧𝐢𝐭𝐨𝐫 𝐄𝐚𝐫𝐭𝐡. 𝐃𝐞𝐭𝐞𝐜𝐭 𝐂𝐡𝐚𝐧𝐠𝐞. 𝐀𝐜𝐭 𝐒𝐦𝐚𝐫𝐭.
+![GeoWatch Logo](https://img.shields.io/badge/GeoWatch-Earth%20Monitoring-00ff88?style=for-the-badge&logo=satellite&logoColor=white)
 
-[![GeoWatch Release](https://img.shields.io/badge/Release-v2.0.0-1e3a8a?style=for-the-badge&logo=satellite&logoColor=22c55e)](https://github.com/Ram6023/GeoWatch)
-[![Status](https://img.shields.io/badge/Status-Operational-22c55e?style=for-the-badge&logo=pulse&logoColor=white)]()
-[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Cloud-0f172a?style=for-the-badge&logo=google-earth&logoColor=3b82f6)]()
-[![License](https://img.shields.io/badge/License-MIT-fab005?style=for-the-badge&logo=scales&logoColor=white)]()
+**Monitor Earth. Detect Change. Act Smart.**
 
-<br/>
-
-**Built with ❤️ by Ram (Sriram Vissakoti)**
-
-
-<p align="center">
-  <i>AI-Powered Satellite Imagery Change Detection Platform</i>
-</p>
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-## 🌠 𝐓𝐡𝐞 𝐌𝐢𝐬𝐬𝐢𝐨𝐧
+## 🛰️ Overview
 
-> *"To empower decision-making by revealing the invisible changes happening on our planet's surface through the lens of advanced satellite technology."*
+GeoWatch is a **premium satellite imagery change detection platform** that enables real-time Earth observation and environmental monitoring. Built with a stunning space-themed UI, it provides NDVI analysis, automated alerts, and comprehensive reporting capabilities.
 
-Manual monitoring of Earth is **slow**, **inconsistent**, and **impossible at scale**. GeoWatch changes the game by automating orbital surveillance to detect:
-*   🌲 **Deforestation**
-*   🏙️ **Urban Sprawl**
-*   💧 **Water Resource Changes**
-*   🚜 **Agricultural Anomalies**
+### ✨ Key Features
 
----
-
-## 🚀 𝐂𝐨𝐫𝐞 𝐂𝐚𝐩𝐚𝐛𝐢𝐥𝐢𝐭𝐢𝐞𝐬
-
-<div align="center">
-
-| 🛰️ **Orbital Intelligence** | 📊 **Data Visualization** |
-|:---:|:---:|
-| **Automated Monitoring**<br/>Define Area of Interests (AOIs) and let the satellite network do the rest. | **NDVI Time-Series**<br/>Interactive deep-dive charts tracking vegetation health over years. |
-| **Change Detection AI**<br/>Algorithms that pinpoint differences between historical and live imagery. | **Smart Reports**<br/>Auto-generated PDF insights ready for stakeholders. |
-
-</div>
-
-### 🔮 New in v2.0
-- ✨ **Glassmorphism UI**: A stunning, modern interface inspired by orbital command centers.
-- 📈 **Advanced Analytics**: Granular NDVI trend lines with `Recharts`.
-- ⚡ **Real-time Alerts**: Instant notifications when significant changes are detected.
+| Feature | Description |
+|---------|-------------|
+| 🗺️ **AOI Management** | Define and manage Areas of Interest with interactive satellite map tiles |
+| 📊 **NDVI Analytics** | Real-time vegetation health monitoring with trend analysis charts |
+| 🔔 **Smart Alerts** | Automated change detection with email and in-app notifications |
+| 📄 **PDF Reports** | Generate and export comprehensive analysis reports |
+| 🌙 **Space Theme** | Premium dark mode with animated stars, orbital effects, and glassmorphism |
+| 📱 **Responsive** | Fully responsive design optimized for all devices |
 
 ---
 
-## 🛠️ 𝐓𝐞𝐜𝐡𝐧𝐨𝐥𝐨𝐠𝐲 𝐒𝐭𝐚𝐜𝐤
+## 🚀 Quick Start
 
-This platform is engineered with a robust, modern stack designed for scale and performance.
+### Prerequisites
 
-<div align="center">
+- Node.js 18+ 
+- npm or yarn
 
-| **Frontend** | **Backend** | **Orbital Data** |
-|:---:|:---:|:---:|
-| ![React](https://img.shields.io/badge/React_18-20232a?style=for-the-badge&logo=react&logoColor=61DAFB) | ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi) | ![Google Earth Engine](https://img.shields.io/badge/Google_Earth_Engine-4285F4?style=for-the-badge&logo=google-earth&logoColor=white) |
-| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) | ![Python](https://img.shields.io/badge/Python_3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white) | ![Celery](https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white) |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white) | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) |
+### Installation
 
-</div>
-
----
-
-## ⚡ 𝐐𝐮𝐢𝐜𝐤 𝐃𝐞𝐩𝐥𝐨𝐲𝐦𝐞𝐧𝐭
-
-Ready to launch? Follow these coordinates.
-
-### 1️⃣ Clone the Uplink
 ```bash
-git clone https://github.com/Ram6023/geowatch.git
-cd geowatch
-```
+# Clone the repository
+git clone https://github.com/Ram/GeoWatch.git
+cd GeoWatch
 
-### 2️⃣ Ignite Backend (Mission Control)
-```bash
-cd backend
-python -m venv venv
-# Windows: venv\Scripts\activate | Mac/Linux: source venv/bin/activate
-pip install -r requirements.txt
-python -c "import ee; ee.Authenticate()"
-uvicorn main:app --reload
-```
-
-### 3️⃣ Launch Frontend (Dashboard)
-```bash
+# Install frontend dependencies
 cd frontend
 npm install
+
+# Start development server
 npm run dev
 ```
 
-� **Access Point:** `http://localhost:5173`
+The application will be available at `http://localhost:5173`
+
+### Demo Credentials
+
+```
+Email: test@geowatch.com
+Password: password123
+```
 
 ---
 
-## � 𝐒𝐲𝐬𝐭𝐞𝐦 𝐀𝐫𝐜𝐡𝐢𝐭𝐞𝐜𝐭𝐮𝐫𝐞
+## 🎨 Premium UI Features
+
+GeoWatch features a **cutting-edge space-themed design** with:
+
+### 🌌 Visual Effects
+- **Animated Earth Globe** - Realistic 3D Earth visualization on login
+- **Twinkling Stars** - Dynamic starfield backgrounds
+- **Orbital Animations** - Satellite orbit rings and pulse effects
+- **Neon Glow Effects** - Cyan and emerald accent glows
+- **Glassmorphism Cards** - Frosted glass UI components
+
+### 🎯 Design System
+- **Space Color Palette** - Deep blues, cosmic purples, aurora greens
+- **Orbitron Font** - Futuristic display typography
+- **Gradient Buttons** - Multi-color gradient CTAs with shadows
+- **Smooth Animations** - Slide-up, fade-in, pulse transitions
+
+---
+
+## 📂 Project Structure
 
 ```
-📦 GEOWATCH-CORE
- ┣ 📂 backend (API Core)
- ┃ ┣ � routes/ (Auth, AOI, Analysis)
- ┃ ┣ �️ celery/ (Async Processing)
- ┃ ┗ �️ gee/ (Earth Engine Tasks)
- ┣  frontend (Command Center)
- ┃ ┣ ⚛️ components/ (UI Toolkit)
- ┃ ┣ 📊 visualizations/ (Charts & Maps)
- ┃ ┗ 🎨 styles/ (Glassmorphism Theme)
- ┣  notebooks (Research Lab)
- ┗ 📂 documentation (Archives)
+GeoWatch/
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   │   ├── Layout.tsx
+│   │   │   └── AOIAlertsModal.tsx
+│   │   ├── contexts/       # React contexts
+│   │   │   ├── AuthContext.tsx
+│   │   │   └── ThemeContext.tsx
+│   │   ├── pages/          # Page components
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── SignupPage.tsx
+│   │   │   ├── AOIList.tsx
+│   │   │   ├── CreateAOI.tsx
+│   │   │   ├── AnalyticsPage.tsx
+│   │   │   ├── ReportsPage.tsx
+│   │   │   └── Settings.tsx
+│   │   ├── services/       # Data services
+│   │   │   └── mockData.ts # Mock API with localStorage
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── index.css       # Space theme styles
+│   ├── tailwind.config.js
+│   ├── vite.config.ts
+│   └── package.json
+└── README.md
 ```
+
+---
+
+## 🔧 Technology Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI Library with Hooks |
+| **TypeScript** | Type-safe JavaScript |
+| **TailwindCSS** | Utility-first CSS framework |
+| **Vite** | Fast build tool and dev server |
+| **React Router** | Client-side routing |
+| **Recharts** | Data visualization charts |
+| **React Leaflet** | Interactive satellite maps |
+| **Lucide React** | Modern icon library |
+| **React Hot Toast** | Toast notifications |
+
+### Map Tiles
+| Provider | Usage |
+|----------|-------|
+| **ESRI World Imagery** | Real satellite imagery tiles |
+| **NASA Earth Observatory** | Sample satellite images |
+
+---
+
+## 🗺️ Features in Detail
+
+### 1. Dashboard
+- Welcome hero with animated Earth
+- Real-time statistics cards
+- Recent monitoring zones list
+- Quick action shortcuts
+
+### 2. AOI Management
+- Interactive satellite map for drawing zones
+- Polygon and rectangle drawing tools
+- Monitoring frequency configuration
+- Change type classification
+- Alert threshold settings
+
+### 3. NDVI Analytics
+- 12-month time-series charts
+- Trend analysis (increasing/decreasing/stable)
+- Min/Max/Average statistics
+- Interactive tooltips
+
+### 4. Reports
+- Generate comprehensive reports
+- Preview before download
+- Export as JSON or PDF
+- Zone configuration summary
+- NDVI analysis included
+
+### 5. Settings
+- Dark/Light theme toggle
+- Notification preferences
+- Security settings
+- About information
+
+---
+
+## 🌐 Mock Data Service
+
+GeoWatch runs **fully offline** with a comprehensive mock data service:
+
+- **Authentication** - Login/Signup with localStorage persistence
+- **AOI CRUD** - Create, read, update, delete operations
+- **Demo Data** - 4 pre-configured monitoring zones
+- **NDVI Generation** - Realistic seasonal data with variations
+- **Change Alerts** - Simulated detection events
+
+---
+
+## 📸 Screenshots
+
+### Login Page
+Premium space-themed login with animated Earth globe and orbiting satellites.
+
+### Dashboard
+Mission control center with real-time stats and monitoring zone overview.
+
+### AOI Definition
+Interactive satellite map for drawing monitoring areas.
+
+### Analytics
+NDVI time-series charts with trend analysis.
+
+---
+
+## 🛠️ Development
+
+### Available Scripts
+
+```bash
+# Development server
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+
+# Type checking
+npm run lint
+```
+
+### Building for Production
+
+```bash
+cd frontend
+npm run build
+```
+
+The built files will be in `frontend/dist/`.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👤 Author
+
+**Ram (Sriram Vissakoti)**
+
+- Built with ❤️ for Earth observation and environmental monitoring
+- Premium UI design inspired by space exploration themes
 
 ---
 
 <div align="center">
 
-### 🌌 Exploring the Future of Earth Observation
+**🌍 GeoWatch - Monitor Earth. Detect Change. Act Smart. 🛰️**
 
-**© 2026 GeoWatch** • *Designed & Engineered by Ram*
-
-[![GitHub](https://img.shields.io/badge/GitHub-Ram6023-181717?style=flat&logo=github&logoColor=white)](https://github.com/Ram6023)
-[![LinkedIn](https://img.shields.io/badge/Connect-LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)]()
+© 2026 GeoWatch. All rights reserved.
 
 </div>

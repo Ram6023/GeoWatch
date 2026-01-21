@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, MapPin, Calendar, Settings, Trash2, Eye, Search, BarChart3, Download, Filter } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import AOIAlertsModal from '../components/AOIAlertsModal';
-
-interface AOI {
-  _id: string;
-  name: string;
-  changeType: string;
-  monitoringFrequency: string;
-  status: string;
-  createdAt: string;
-  lastMonitored?: string;
-  confidenceThreshold: number;
-  description?: string;
-}
+import { AOIService, AOI } from '../services/mockData';
 
 export default function AOIList() {
   const [aois, setAois] = useState<AOI[]>([]);
@@ -30,8 +18,8 @@ export default function AOIList() {
 
   const fetchAOIs = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/geowatch/aois/');
-      setAois(response.data);
+      const data = await AOIService.getAll();
+      setAois(data);
     } catch (error) {
       console.error('Error fetching zones:', error);
       toast.error('Failed to fetch monitoring zones');
@@ -46,7 +34,7 @@ export default function AOIList() {
     }
 
     try {
-      await axios.delete(`http://localhost:8000/api/geowatch/aois/${id}`);
+      await AOIService.delete(id);
       setAois(aois.filter(aoi => aoi._id !== id));
       toast.success('Zone deleted successfully');
     } catch (error) {
@@ -223,18 +211,20 @@ export default function AOIList() {
                   >
                     <Eye className="h-5 w-5" />
                   </button>
-                  <button
+                  <Link
+                    to={`/analytics?aoi=${aoi._id}`}
                     className="btn btn-secondary p-2.5"
                     title="View NDVI Chart"
                   >
                     <BarChart3 className="h-5 w-5" />
-                  </button>
-                  <button
+                  </Link>
+                  <Link
+                    to={`/reports?aoi=${aoi._id}`}
                     className="btn btn-secondary p-2.5"
                     title="Download Report"
                   >
                     <Download className="h-5 w-5" />
-                  </button>
+                  </Link>
                   <button
                     className="btn btn-secondary p-2.5 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                     onClick={() => deleteAOI(aoi._id)}
