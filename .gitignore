@@ -1,39 +1,83 @@
 # Dependencies
 node_modules/
-backend/venv/
-backend/.venv/
-venv/
-.venv/
-__pycache__/
-*.py[cod]
+.pnp
+.pnp.js
 
-# Environment variables
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+.next/
+out/
+
+# Environment Variables
 .env
 .env.local
-.env.*.local
-backend/.env
-frontend/.env
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.local
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# System
-.DS_Store
-Thumbs.db
-
-# Build outputs
-frontend/dist/
-frontend/build/
-backend/build/
-backend/dist/
-*.egg-info/
+# Vite
+*.local
 
 # Logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.log
+lerna-debug.log*
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE Files
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.classpath
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Backend / Python (if applicable)
+venv/
+.venv/
+env/
+.env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
 celerybeat-schedule
+
+# Cache
+.cache/
+.nyc_output/
+.parcel-cache/
+.turbo/
+.vercel/
+
+# TypeScript
+*.tsbuildinfo
+
+# Large Files
+*.zip
+*.tar.gz
+*.rar
